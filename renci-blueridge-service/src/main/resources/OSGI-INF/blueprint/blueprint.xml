@@ -4,8 +4,8 @@
 
   <cm:property-placeholder persistent-id="org.renci.gate.plugin.blueridge" update-strategy="reload">
     <cm:default-properties>
-      <cm:property name="maxTotalPending" value="9" />
-      <cm:property name="maxTotalRunning" value="30" />
+      <cm:property name="maxTotalPending" value="3" />
+      <cm:property name="maxTotalRunning" value="12" />
       <cm:property name="submitHost" value="br0.renci.org" />
       <cm:property name="collectorHost" value="biodev2.its.unc.edu" />
       <cm:property name="activeQueues" value="serial" />
@@ -16,10 +16,10 @@
   <bean id="serialQueue" class="org.renci.jlrm.Queue">
     <property name="name" value="serial" />
     <property name="weight" value="1" />
-    <property name="maxJobLimit" value="32" />
-    <property name="maxMultipleJobsToSubmit" value="3" />
+    <property name="maxJobLimit" value="20" />
+    <property name="maxMultipleJobsToSubmit" value="2" />
     <property name="pendingTime" value="1440" />
-    <property name="runTime" value="2880" />
+    <property name="runTime" value="5760" />
   </bean>
 
   <bean id="site" class="org.renci.jlrm.Site">
