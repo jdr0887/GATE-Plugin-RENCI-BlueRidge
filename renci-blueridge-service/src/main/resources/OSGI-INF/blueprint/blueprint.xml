@@ -4,8 +4,8 @@
 
   <cm:property-placeholder persistent-id="org.renci.gate.plugin.blueridge" update-strategy="reload">
     <cm:default-properties>
-      <cm:property name="maxTotalPending" value="3" />
-      <cm:property name="maxTotalRunning" value="12" />
+      <cm:property name="maxTotalPending" value="4" />
+      <cm:property name="maxTotalRunning" value="20" />
       <cm:property name="submitHost" value="br0.renci.org" />
       <cm:property name="collectorHost" value="biodev2.its.unc.edu" />
       <cm:property name="activeQueues" value="serial" />
