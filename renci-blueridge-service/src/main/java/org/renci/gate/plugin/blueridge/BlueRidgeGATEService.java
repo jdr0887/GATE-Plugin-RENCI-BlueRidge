@@ -32,8 +32,6 @@ public class BlueRidgeGATEService extends AbstractGATEService {
 
     private final Logger logger = LoggerFactory.getLogger(BlueRidgeGATEService.class);
 
-    private final List<PBSSSHJob> jobCache = new ArrayList<PBSSSHJob>();
-
     private String username;
 
     public BlueRidgeGATEService() {
@@ -46,7 +44,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
         Map<String, GlideinMetric> metricsMap = new HashMap<String, GlideinMetric>();
 
         try {
-            PBSSSHLookupStatusCallable callable = new PBSSSHLookupStatusCallable(getSite(), jobCache);
+            PBSSSHLookupStatusCallable callable = new PBSSSHLookupStatusCallable(getSite());
             Set<PBSJobStatusInfo> jobStatusSet = Executors.newSingleThreadExecutor().submit(callable).get();
             logger.debug("jobStatusSet.size(): {}", jobStatusSet.size());
 
@@ -54,16 +52,11 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             Set<String> queueSet = new HashSet<String>();
             if (jobStatusSet != null && jobStatusSet.size() > 0) {
                 for (PBSJobStatusInfo info : jobStatusSet) {
-                    queueSet.add(info.getQueue());
+                    if (!queueSet.contains(info.getQueue())) {
+                        queueSet.add(info.getQueue());
+                    }
                 }
-                for (PBSSSHJob job : jobCache) {
-                    queueSet.add(job.getQueueName());
-                }
-            }
 
-            Set<String> alreadyTalliedJobIdSet = new HashSet<String>();
-
-            if (jobStatusSet != null && jobStatusSet.size() > 0) {
                 for (PBSJobStatusInfo info : jobStatusSet) {
                     if (metricsMap.containsKey(info.getQueue())) {
                         continue;
@@ -72,7 +65,6 @@ public class BlueRidgeGATEService extends AbstractGATEService {
                         continue;
                     }
                     metricsMap.put(info.getQueue(), new GlideinMetric(0, 0, info.getQueue()));
-                    alreadyTalliedJobIdSet.add(info.getJobId());
                 }
 
                 for (PBSJobStatusInfo info : jobStatusSet) {
@@ -90,35 +82,9 @@ public class BlueRidgeGATEService extends AbstractGATEService {
                             break;
                     }
                 }
+
             }
 
-            Iterator<PBSSSHJob> jobCacheIter = jobCache.iterator();
-            while (jobCacheIter.hasNext()) {
-                PBSSSHJob nextJob = jobCacheIter.next();
-                for (PBSJobStatusInfo info : jobStatusSet) {
-
-                    if (!nextJob.getName().equals(info.getJobName())) {
-                        continue;
-                    }
-
-                    if (!alreadyTalliedJobIdSet.contains(nextJob.getId()) && nextJob.getId().equals(info.getJobId())) {
-                        switch (info.getType()) {
-                            case QUEUED:
-                                metricsMap.get(info.getQueue()).incrementPending();
-                                break;
-                            case RUNNING:
-                                metricsMap.get(info.getQueue()).incrementRunning();
-                                break;
-                            case COMPLETE:
-                                jobCacheIter.remove();
-                                break;
-                            case SUSPENDED:
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
         } catch (Exception e) {
             throw new GATEException(e);
         }
@@ -137,7 +103,6 @@ public class BlueRidgeGATEService extends AbstractGATEService {
 
         File submitDir = new File("/tmp", System.getProperty("user.name"));
         submitDir.mkdirs();
-        PBSSSHJob job = null;
 
         try {
             logger.info("siteInfo: {}", getSite());
@@ -154,11 +119,8 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             callable.setHostAllowRead(hostAllow);
             callable.setHostAllowWrite(hostAllow);
 
-            job = Executors.newSingleThreadExecutor().submit(callable).get();
-            if (job != null && StringUtils.isNotEmpty(job.getId())) {
-                logger.info("job.getId(): {}", job.getId());
-                jobCache.add(job);
-            }
+            Executors.newSingleThreadExecutor().submit(callable).get();
+
         } catch (Exception e) {
             throw new GATEException(e);
         }
@@ -167,27 +129,22 @@ public class BlueRidgeGATEService extends AbstractGATEService {
     @Override
     public void deleteGlidein(Queue queue) throws GATEException {
         logger.info("ENTERING deleteGlidein(Queue)");
-        if (jobCache.size() > 0) {
-            try {
-                logger.info("siteInfo: {}", getSite());
-                logger.info("queueInfo: {}", queue);
-                PBSSSHJob job = jobCache.get(0);
-                logger.info("job: {}", job.toString());
-                PBSSSHKillCallable callable = new PBSSSHKillCallable(getSite(), job.getId());
-                Executors.newSingleThreadExecutor().submit(callable).get();
-                jobCache.remove(0);
-            } catch (Exception e) {
-                throw new GATEException(e);
-            }
+        try {
+            PBSSSHLookupStatusCallable lookupStatusCallable = new PBSSSHLookupStatusCallable(getSite());
+            Set<PBSJobStatusInfo> jobStatusSet = Executors.newSingleThreadExecutor().submit(lookupStatusCallable).get();
+            PBSSSHKillCallable killCallable = new PBSSSHKillCallable(getSite(), jobStatusSet.iterator().next()
+                    .getJobId());
+            Executors.newSingleThreadExecutor().submit(killCallable).get();
+        } catch (Exception e) {
+            throw new GATEException(e);
         }
-
     }
 
     @Override
     public void deletePendingGlideins() throws GATEException {
         logger.info("ENTERING deletePendingGlideins()");
         try {
-            PBSSSHLookupStatusCallable lookupStatusCallable = new PBSSSHLookupStatusCallable(getSite(), jobCache);
+            PBSSSHLookupStatusCallable lookupStatusCallable = new PBSSSHLookupStatusCallable(getSite());
             Set<PBSJobStatusInfo> jobStatusSet = Executors.newSingleThreadExecutor().submit(lookupStatusCallable).get();
             for (PBSJobStatusInfo info : jobStatusSet) {
                 if (info.getType().equals(PBSJobStatusType.QUEUED)) {
