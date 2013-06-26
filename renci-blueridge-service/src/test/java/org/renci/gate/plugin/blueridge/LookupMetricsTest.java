@@ -27,104 +27,74 @@ public class LookupMetricsTest {
 
     @Test
     public void testLookupMetricsForReal() {
-        List<PBSSSHJob> jobCache = new ArrayList<PBSSSHJob>();
+        Site site = new Site();
+        site.setName("BlueRidge");
+        site.setProject("RENCI");
+        site.setUsername("mapseq");
+        site.setSubmitHost("br0.renci.org");
+        site.setMaxTotalPending(4);
+        site.setMaxTotalRunning(4);
+
+        Map<String, Queue> queueInfoMap = new HashMap<String, Queue>();
+
+        Queue queue = new Queue();
+        queue.setMaxJobLimit(10);
+        queue.setMaxMultipleJobsToSubmit(2);
+        queue.setName("serial");
+        queue.setWeight(1D);
+        queue.setPendingTime(1440);
+        queue.setRunTime(5760);
+        queueInfoMap.put("serial", queue);
+
+        site.setQueueInfoMap(queueInfoMap);
 
         Map<String, GlideinMetric> metricsMap = new HashMap<String, GlideinMetric>();
 
+        PBSSSHLookupStatusCallable callable = new PBSSSHLookupStatusCallable(site);
+        Set<PBSJobStatusInfo> jobStatusSet = null;
         try {
+            jobStatusSet = Executors.newSingleThreadExecutor().submit(callable).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
-            Site site = new Site();
-            site.setName("BlueRidge");
-            site.setProject("RENCI");
-            site.setUsername("mapseq");
-            site.setSubmitHost("br0.renci.org");
-            site.setMaxTotalPending(4);
-            site.setMaxTotalRunning(4);
-            Map<String, Queue> queueInfoMap = new HashMap<String, Queue>();
-            Queue queue = new Queue();
-            queue.setMaxJobLimit(10);
-            queue.setMaxMultipleJobsToSubmit(2);
-            queue.setName("serial");
-            queue.setWeight(1D);
-            queue.setPendingTime(1440);
-            queue.setRunTime(5760);
-            queueInfoMap.put("serial", queue);
-            site.setQueueInfoMap(queueInfoMap);
-
-            PBSSSHLookupStatusCallable callable = new PBSSSHLookupStatusCallable(site, jobCache);
-            Set<PBSJobStatusInfo> jobStatusSet = Executors.newSingleThreadExecutor().submit(callable).get();
-
-            // get unique list of queues
-            Set<String> queueSet = new HashSet<String>();
-            if (jobStatusSet != null && jobStatusSet.size() > 0) {
-                for (PBSJobStatusInfo info : jobStatusSet) {
+        // get unique list of queues
+        Set<String> queueSet = new HashSet<String>();
+        if (jobStatusSet != null && jobStatusSet.size() > 0) {
+            for (PBSJobStatusInfo info : jobStatusSet) {
+                if (!queueSet.contains(info.getQueue())) {
                     queueSet.add(info.getQueue());
                 }
-                for (PBSSSHJob job : jobCache) {
-                    queueSet.add(job.getQueueName());
+            }
+
+            for (PBSJobStatusInfo info : jobStatusSet) {
+                if (metricsMap.containsKey(info.getQueue())) {
+                    continue;
+                }
+                if (!"glidein".equals(info.getJobName())) {
+                    continue;
+                }
+                metricsMap.put(info.getQueue(), new GlideinMetric(0, 0, info.getQueue()));
+            }
+
+            for (PBSJobStatusInfo info : jobStatusSet) {
+
+                if (!"glidein".equals(info.getJobName())) {
+                    continue;
+                }
+
+                switch (info.getType()) {
+                    case QUEUED:
+                        metricsMap.get(info.getQueue()).incrementPending();
+                        break;
+                    case RUNNING:
+                        metricsMap.get(info.getQueue()).incrementRunning();
+                        break;
                 }
             }
 
-            Set<String> alreadyTalliedJobIdSet = new HashSet<String>();
-
-            if (jobStatusSet != null && jobStatusSet.size() > 0) {
-                for (PBSJobStatusInfo info : jobStatusSet) {
-                    if (metricsMap.containsKey(info.getQueue())) {
-                        continue;
-                    }
-                    if (!"glidein".equals(info.getJobName())) {
-                        continue;
-                    }
-                    metricsMap.put(info.getQueue(), new GlideinMetric(0, 0, info.getQueue()));
-                    alreadyTalliedJobIdSet.add(info.getJobId());
-                }
-
-                for (PBSJobStatusInfo info : jobStatusSet) {
-
-                    if (!"glidein".equals(info.getJobName())) {
-                        continue;
-                    }
-
-                    switch (info.getType()) {
-                        case QUEUED:
-                            metricsMap.get(info.getQueue()).incrementPending();
-                            break;
-                        case RUNNING:
-                            metricsMap.get(info.getQueue()).incrementRunning();
-                            break;
-                    }
-                }
-            }
-
-            Iterator<PBSSSHJob> jobCacheIter = jobCache.iterator();
-            while (jobCacheIter.hasNext()) {
-                PBSSSHJob nextJob = jobCacheIter.next();
-                for (PBSJobStatusInfo info : jobStatusSet) {
-
-                    if (!nextJob.getName().equals(info.getJobName())) {
-                        continue;
-                    }
-
-                    if (!alreadyTalliedJobIdSet.contains(nextJob.getId()) && nextJob.getId().equals(info.getJobId())) {
-                        switch (info.getType()) {
-                            case QUEUED:
-                                metricsMap.get(info.getQueue()).incrementPending();
-                                break;
-                            case RUNNING:
-                                metricsMap.get(info.getQueue()).incrementRunning();
-                                break;
-                            case COMPLETE:
-                                jobCacheIter.remove();
-                                break;
-                            case SUSPENDED:
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
         }
 
         for (String key : metricsMap.keySet()) {
