@@ -1,11 +1,8 @@
 package org.renci.gate.plugin.blueridge;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -14,10 +11,11 @@ import org.apache.commons.lang.StringUtils;
 import org.renci.gate.AbstractGATEService;
 import org.renci.gate.GATEException;
 import org.renci.gate.GlideinMetric;
+import org.renci.jlrm.JLRMException;
 import org.renci.jlrm.Queue;
+import org.renci.jlrm.commons.ssh.SSHConnectionUtil;
 import org.renci.jlrm.pbs.PBSJobStatusInfo;
 import org.renci.jlrm.pbs.PBSJobStatusType;
-import org.renci.jlrm.pbs.ssh.PBSSSHJob;
 import org.renci.jlrm.pbs.ssh.PBSSSHKillCallable;
 import org.renci.jlrm.pbs.ssh.PBSSSHLookupStatusCallable;
 import org.renci.jlrm.pbs.ssh.PBSSSHSubmitCondorGlideinCallable;
@@ -36,6 +34,21 @@ public class BlueRidgeGATEService extends AbstractGATEService {
 
     public BlueRidgeGATEService() {
         super();
+    }
+
+    @Override
+    public Boolean isValid() throws GATEException {
+        logger.info("ENTERING isValid()");
+        try {
+            String results = SSHConnectionUtil.execute("ls /projects/mapseq/ | wc -l", getSite().getUsername(),
+                    getSite().getSubmitHost());
+            if (StringUtils.isNotEmpty(results) && Integer.valueOf(results.trim()) > 0) {
+                return true;
+            }
+        } catch (NumberFormatException | JLRMException e) {
+            throw new GATEException(e);
+        }
+        return false;
     }
 
     @Override
