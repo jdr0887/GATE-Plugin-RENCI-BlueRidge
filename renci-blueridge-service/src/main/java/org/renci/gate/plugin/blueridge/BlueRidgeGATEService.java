@@ -107,7 +107,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
         logger.info("ENTERING createGlidein(Queue)");
 
         if (StringUtils.isNotEmpty(getActiveQueues()) && !getActiveQueues().contains(queue.getName())) {
-            logger.warn("queue name is not in active queue list...see etc/org.renci.gate.plugin.kure.cfg");
+            logger.warn("queue name is not in active queue list...see etc/org.renci.gate.plugin.blueridge.cfg");
             return;
         }
 
@@ -128,7 +128,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             callable.setRequiredMemory(40);
             callable.setHostAllowRead(hostAllow);
             callable.setHostAllowWrite(hostAllow);
-
+            callable.setNumberOfProcessors("$(DETECTED_CORES)/2");
             Executors.newSingleThreadExecutor().submit(callable).get();
 
         } catch (Exception e) {
