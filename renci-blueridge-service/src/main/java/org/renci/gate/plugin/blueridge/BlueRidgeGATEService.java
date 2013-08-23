@@ -128,7 +128,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             callable.setRequiredMemory(40);
             callable.setHostAllowRead(hostAllow);
             callable.setHostAllowWrite(hostAllow);
-            callable.setNumberOfProcessors("$(DETECTED_CORES)/2");
+            callable.setNumberOfProcessors("$(DETECTED_CORES)/4");
             Executors.newSingleThreadExecutor().submit(callable).get();
 
         } catch (Exception e) {
