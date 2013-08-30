@@ -2,13 +2,13 @@
   <parent>
     <groupId>org.renci.gate.plugins.renci</groupId>
     <artifactId>blueridge</artifactId>
-    <version>0.1.19-SNAPSHOT</version>
+    <version>0.1.19</version>
   </parent>
   <name>GATE :: Plugins :: RENCI :: BlueRidge :: Service</name>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.renci.gate.plugins.renci.blueridge</groupId>
   <artifactId>renci-blueridge-service</artifactId>
-  <version>0.1.19-SNAPSHOT</version>
+  <version>0.1.19</version>
   <packaging>bundle</packaging>
   <dependencies>
     <dependency>
