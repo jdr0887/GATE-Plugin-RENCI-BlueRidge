@@ -35,7 +35,7 @@ public class LookupMetricsTest {
         site.setMaxTotalPending(4);
         site.setMaxTotalRunning(4);
 
-        Map<String, Queue> queueInfoMap = new HashMap<String, Queue>();
+        List<Queue> queueList = new ArrayList<Queue>();
 
         Queue queue = new Queue();
         queue.setMaxJobLimit(10);
@@ -44,9 +44,9 @@ public class LookupMetricsTest {
         queue.setWeight(1D);
         queue.setPendingTime(1440);
         queue.setRunTime(5760);
-        queueInfoMap.put("serial", queue);
+        queueList.add(queue);
 
-        site.setQueueInfoMap(queueInfoMap);
+        site.setQueueList(queueList);
 
         Map<String, GlideinMetric> metricsMap = new HashMap<String, GlideinMetric>();
 
@@ -76,7 +76,7 @@ public class LookupMetricsTest {
                 if (!"glidein".equals(info.getJobName())) {
                     continue;
                 }
-                metricsMap.put(info.getQueue(), new GlideinMetric(0, 0, info.getQueue()));
+                metricsMap.put(info.getQueue(), new GlideinMetric("Blueridge", info.getQueue(), 0, 0));
             }
 
             for (PBSJobStatusInfo info : jobStatusSet) {
@@ -143,7 +143,7 @@ public class LookupMetricsTest {
         if (jobStatusSet != null && jobStatusSet.size() > 0) {
             for (PBSJobStatusInfo info : jobStatusSet) {
                 if (!jobTallyMap.containsKey(info.getQueue())) {
-                    jobTallyMap.put(info.getQueue(), new GlideinMetric(0, 0, info.getQueue()));
+                    jobTallyMap.put(info.getQueue(), new GlideinMetric("Blueridge", info.getQueue(), 0, 0));
                 }
                 alreadyTalliedJobIdSet.add(info.getJobId());
             }
