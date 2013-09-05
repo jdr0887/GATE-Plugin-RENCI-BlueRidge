@@ -1,8 +1,9 @@
 package org.renci.gate.plugin.blueridge;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -52,15 +53,14 @@ public class BlueRidgeGATEService extends AbstractGATEService {
     }
 
     @Override
-    public Map<String, GlideinMetric> lookupMetrics() throws GATEException {
+    public List<GlideinMetric> lookupMetrics() throws GATEException {
         logger.info("ENTERING lookupMetrics()");
+
         Map<String, GlideinMetric> metricsMap = new HashMap<String, GlideinMetric>();
 
-        //stub out the metricsMap
-        Map<String, Queue> queueInfoMap = getSite().getQueueInfoMap();
-        for (String key : queueInfoMap.keySet()) {
-            Queue queue = queueInfoMap.get(key);
-            metricsMap.put(queue.getName(), new GlideinMetric(0, 0, queue.getName()));
+        List<Queue> queueList = getSite().getQueueList();
+        for (Queue queue : queueList) {
+            metricsMap.put(queue.getName(), new GlideinMetric(getSite().getName(), queue.getName(), 0, 0));
         }
 
         try {
@@ -68,14 +68,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             Set<PBSJobStatusInfo> jobStatusSet = Executors.newSingleThreadExecutor().submit(callable).get();
             logger.debug("jobStatusSet.size(): {}", jobStatusSet.size());
 
-            // get unique list of queues
-            Set<String> queueSet = new HashSet<String>();
             if (jobStatusSet != null && jobStatusSet.size() > 0) {
-                for (PBSJobStatusInfo info : jobStatusSet) {
-                    if (!queueSet.contains(info.getQueue())) {
-                        queueSet.add(info.getQueue());
-                    }
-                }
 
                 for (PBSJobStatusInfo info : jobStatusSet) {
 
@@ -91,6 +84,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
                             metricsMap.get(info.getQueue()).incrementRunning();
                             break;
                     }
+
                 }
 
             }
@@ -99,7 +93,10 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             throw new GATEException(e);
         }
 
-        return metricsMap;
+        List<GlideinMetric> metricList = new ArrayList<GlideinMetric>();
+        metricList.addAll(metricsMap.values());
+
+        return metricList;
     }
 
     @Override
