@@ -32,18 +32,15 @@ public class LookupMetricsTest {
         site.setProject("RENCI");
         site.setUsername("mapseq");
         site.setSubmitHost("br0.renci.org");
-        site.setMaxTotalPending(4);
-        site.setMaxTotalRunning(4);
 
         List<Queue> queueList = new ArrayList<Queue>();
 
         Queue queue = new Queue();
-        queue.setMaxJobLimit(10);
-        queue.setMaxMultipleJobsToSubmit(2);
+        queue.setMaxPending(4);
+        queue.setMaxRunning(4);
         queue.setName("serial");
         queue.setWeight(1D);
-        queue.setPendingTime(1440);
-        queue.setRunTime(5760);
+        queue.setRunTime(5760L);
         queueList.add(queue);
 
         site.setQueueList(queueList);
