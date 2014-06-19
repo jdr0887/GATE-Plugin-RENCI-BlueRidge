@@ -21,6 +21,7 @@ import org.renci.jlrm.Site;
 import org.renci.jlrm.pbs.PBSJobStatusInfo;
 import org.renci.jlrm.pbs.PBSJobStatusType;
 import org.renci.jlrm.pbs.ssh.PBSSSHJob;
+import org.renci.jlrm.pbs.ssh.PBSSSHJobBuilder;
 import org.renci.jlrm.pbs.ssh.PBSSSHLookupStatusCallable;
 
 public class LookupMetricsTest {
@@ -158,9 +159,8 @@ public class LookupMetricsTest {
             }
         }
 
-        PBSSSHJob job = new PBSSSHJob("test", new File("/bin/hostname"));
-        job.setId(r.nextInt() + "");
-        job.setQueueName("pseq_prod");
+        PBSSSHJob job = new PBSSSHJobBuilder().name("test").executable(new File("/bin/hostname")).id(r.nextInt() + "")
+                .queueName("pseq_prod").build();
         jobCache.add(job);
 
         Iterator<PBSSSHJob> jobCacheIter = jobCache.iterator();
