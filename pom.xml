@@ -15,8 +15,8 @@
     <renci.gate.version>0.2.11</renci.gate.version>
   </properties>
   <issueManagement>
-    <system>gForge</system>
-    <url>https://code.renci.org/gf/project/g_p_r_b/tracker/</url>
+    <system>GitHub Issues</system>
+    <url>https://github.com/jdr0887/GATE-Plugin-RENCI-BlueRidge/issues</url>
   </issueManagement>
   <ciManagement>
     <system>hudson</system>
@@ -40,8 +40,8 @@
     </license>
   </licenses>
   <scm>
-    <developerConnection>scm:git:git@github.com:jdr0887/GATE-Plugin-RENCI-BlueRige.git</developerConnection>
-    <connection>scm:git:git@github.com:jdr0887/GATE-Plugin-RENCI-BlueRige.git</connection>
+    <developerConnection>scm:git:git@github.com:jdr0887/GATE-Plugin-RENCI-BlueRidge.git</developerConnection>
+    <connection>scm:git:git@github.com:jdr0887/GATE-Plugin-RENCI-BlueRidge.git</connection>
   </scm>
   <dependencyManagement>
     <dependencies>
