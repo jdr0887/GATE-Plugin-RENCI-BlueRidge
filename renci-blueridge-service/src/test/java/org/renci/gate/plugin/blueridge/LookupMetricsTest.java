@@ -71,7 +71,7 @@ public class LookupMetricsTest {
                 if (metricsMap.containsKey(info.getQueue())) {
                     continue;
                 }
-                if (!"glidein".equals(info.getJobName())) {
+                if (!info.getJobName().contains("glidein")) {
                     continue;
                 }
                 metricsMap.put(info.getQueue(), new GlideinMetric("Blueridge", info.getQueue(), 0, 0));
@@ -79,7 +79,7 @@ public class LookupMetricsTest {
 
             for (PBSJobStatusInfo info : jobStatusSet) {
 
-                if (!"glidein".equals(info.getJobName())) {
+                if (!info.getJobName().contains("glidein")) {
                     continue;
                 }
 
