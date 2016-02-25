@@ -1,7 +1,6 @@
 <features name="gate-plugin-renci-blueridge-${project.version}">
 
   <feature name="gate-plugin-renci-blueridge" version="${project.version}" resolver="(obr)">
-    <bundle>mvn:org.renci.gate.plugins.renci.blueridge/renci-blueridge-commands/${project.version}</bundle>
     <bundle>mvn:org.renci.gate.plugins.renci.blueridge/renci-blueridge-service/${project.version}</bundle>
   </feature>
 
