@@ -20,7 +20,6 @@ import org.renci.jlrm.pbs.PBSJobStatusInfo;
 import org.renci.jlrm.pbs.PBSJobStatusType;
 import org.renci.jlrm.pbs.ssh.PBSSSHKillCallable;
 import org.renci.jlrm.pbs.ssh.PBSSSHLookupStatusCallable;
-import org.renci.jlrm.pbs.ssh.PBSSSHSubmitCondorGlideinCallable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +112,7 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             logger.info("siteInfo: {}", getSite());
             logger.info("queueInfo: {}", queue);
             String hostAllow = "*.unc.edu";
-            PBSSSHSubmitCondorGlideinCallable callable = new PBSSSHSubmitCondorGlideinCallable();
+            BlueRidgeSubmitCondorGlideinCallable callable = new BlueRidgeSubmitCondorGlideinCallable();
             callable.setCollectorHost(getCollectorHost());
             callable.setUsername(System.getProperty("user.name"));
             callable.setSite(getSite());
