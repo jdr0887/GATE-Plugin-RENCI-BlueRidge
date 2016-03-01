@@ -111,7 +111,6 @@ public class BlueRidgeGATEService extends AbstractGATEService {
         try {
             logger.info("siteInfo: {}", getSite());
             logger.info("queueInfo: {}", queue);
-            String hostAllow = "*.unc.edu";
             BlueRidgeSubmitCondorGlideinCallable callable = new BlueRidgeSubmitCondorGlideinCallable();
             callable.setCollectorHost(getCollectorHost());
             callable.setUsername(System.getProperty("user.name"));
@@ -120,8 +119,8 @@ public class BlueRidgeGATEService extends AbstractGATEService {
             callable.setQueue(queue);
             callable.setSubmitDir(submitDir);
             callable.setRequiredMemory(40);
-            callable.setHostAllowRead(hostAllow);
-            callable.setHostAllowWrite(hostAllow);
+            callable.setHostAllowRead(getHostAllow());
+            callable.setHostAllowWrite(getHostAllow());
             callable.setNumberOfProcessors("$(DETECTED_CORES)/2");
             Executors.newSingleThreadExecutor().submit(callable).get();
 

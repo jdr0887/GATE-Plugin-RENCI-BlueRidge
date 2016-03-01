@@ -30,8 +30,12 @@ public class CreateGlideinAction implements Action {
     @Option(name = "--runTime", required = false, multiValued = false)
     private Long runTime = 5760L;
 
+    @Option(name = "--hostAllow", required = false, multiValued = false)
+    private String hostAllow;
+
     public CreateGlideinAction() {
         super();
+        this.hostAllow = "*.unc.edu";
     }
 
     @Override
@@ -53,8 +57,8 @@ public class CreateGlideinAction implements Action {
             callable.setQueue(queue);
             callable.setSubmitDir(submitDir);
             callable.setCollectorHost(collectorHost);
-            callable.setHostAllowRead("*.unc.edu");
-            callable.setHostAllowWrite("*.unc.edu");
+            callable.setHostAllowRead(hostAllow);
+            callable.setHostAllowWrite(hostAllow);
             callable.setRequiredMemory(40);
             callable.setUsername(System.getProperty("user.name"));
             callable.setJobName(String.format("glidein-%s", site.getName().toLowerCase()));
@@ -106,6 +110,14 @@ public class CreateGlideinAction implements Action {
 
     public void setRunTime(Long runTime) {
         this.runTime = runTime;
+    }
+
+    public String getHostAllow() {
+        return hostAllow;
+    }
+
+    public void setHostAllow(String hostAllow) {
+        this.hostAllow = hostAllow;
     }
 
 }
